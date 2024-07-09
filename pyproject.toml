@@ -1,7 +1,7 @@
 [tool.poetry]
-name = "sampleproject"
+name = "kitty_bot"
 version = "0.1.0"
-description = "Sample project"
+description = "Simple telegram bot"
 authors = ["NovaHFly <mugiviska@gmail.com>"]
 license = "MIT"
 readme = "README.md"
@@ -9,18 +9,19 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.10"
+pytelegrambotapi = "^4.21.0"
 
 [tool.poetry.group.testing.dependencies]
 ruff = "^0.4.10"
 mypy = "^1.10.1"
-pytest = "^8.2.2"
+pytest = "^7"
 
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 
 [tool.mypy]
-mypy_path = "src"
+mypy_path = "kitty_bot"
 strict_optional = false
 disable_error_code = "import-untyped"
 
