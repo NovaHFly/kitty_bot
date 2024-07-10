@@ -2,9 +2,12 @@
 
 import requests as req
 import telebot as tb
+from dotenv import load_dotenv
 from telebot.types import Message
 
 from kitty_bot import config
+
+load_dotenv()
 
 CAT_API = 'https://api.thecatapi.com/v1/images/search'
 
