@@ -9,7 +9,7 @@ from kitty_bot import config
 
 load_dotenv()
 
-CAT_API = 'https://api.thecatapi.com/v1/images/search'
+CAT_API_URL = 'https://api.thecatapi.com/v1/images/search'
 
 bot = tb.TeleBot(token=config.TOKEN)
 
@@ -26,7 +26,7 @@ newcat_keyboard.row(
 
 
 def get_cat_url() -> str:
-    (res_json,) = req.get(CAT_API).json()
+    (res_json,) = req.get(CAT_API_URL).json()
     return res_json['url']
 
 
@@ -36,10 +36,12 @@ def send_cat_picture(chat_id: int) -> None:
 
 
 @bot.message_handler(commands=['start'])
-def greeting(message: Message) -> None:
+def greet_user(message: Message) -> None:
     chat = message.chat
+
     chat_id = chat.id
     name = chat.first_name
+
     text = f'Привет, {name}. Посмотри, какого котика я тебе нашёл'
     bot.send_message(chat_id=chat_id, text=text, reply_markup=newcat_keyboard)
     send_cat_picture(chat_id)
@@ -55,13 +57,13 @@ def remove_keyboard(message: Message) -> None:
 
 
 @bot.message_handler(commands=['newcat'])
-def new_cat(message: Message) -> None:
+def send_new_cat(message: Message) -> None:
     bot.send_message(chat_id=message.chat.id, text='Вам телеграмма!')
     send_cat_picture(message.chat.id)
 
 
 @bot.message_handler(content_types=['text'])
-def echo(message: Message) -> None:
+def reply_default(message: Message) -> None:
     chat_id = message.chat.id
     text = 'Привет, я KittyBot!'
     bot.send_message(chat_id=chat_id, text=text)
