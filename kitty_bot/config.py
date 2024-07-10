@@ -1,4 +1,7 @@
 import os
 
-OWNER_CHAT_ID = int(os.environ['OWNER_CHAT_ID'])
+from dotenv import load_dotenv
+
+load_dotenv()
+
 TOKEN = os.environ['TOKEN']

@@ -4,7 +4,6 @@ import logging
 
 import requests as req
 import telebot as tb
-from dotenv import load_dotenv
 from telebot.types import Message
 
 from kitty_bot import config
@@ -15,8 +14,6 @@ logging.basicConfig(
     filemode='a',
     format='%(asctime)s, %(levelname)s, %(message)s, %(name)s',
 )
-
-load_dotenv()
 
 CAT_API_URL = 'https://api.thecatapi.com/v1/images/search'
 DOG_API_URL = 'https://api.thedogapi.com/v1/images/search'
