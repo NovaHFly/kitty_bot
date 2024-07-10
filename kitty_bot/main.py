@@ -10,6 +10,7 @@ from kitty_bot import config
 load_dotenv()
 
 CAT_API_URL = 'https://api.thecatapi.com/v1/images/search'
+DOG_API_URL = 'https://api.thedogapi.com/v1/images/search'
 
 bot = tb.TeleBot(token=config.TOKEN)
 
@@ -26,7 +27,12 @@ newcat_keyboard.row(
 
 
 def get_cat_url() -> str:
-    (res_json,) = req.get(CAT_API_URL).json()
+    try:
+        res = req.get(CAT_API_URL)
+    except Exception as e:
+        print(f'Ошибка доступа к cat api: {e}!')
+        res = req.get(DOG_API_URL)
+    (res_json,) = res.json()
     return res_json['url']
 
 
