@@ -1,11 +1,20 @@
 #! .venv/scripts/python
 
+import logging
+
 import requests as req
 import telebot as tb
 from dotenv import load_dotenv
 from telebot.types import Message
 
 from kitty_bot import config
+
+logging.basicConfig(
+    level=logging.INFO,
+    filename='main.log',
+    filemode='a',
+    format='%(asctime)s, %(levelname)s, %(message)s, %(name)s',
+)
 
 load_dotenv()
 
@@ -30,7 +39,7 @@ def get_cat_url() -> str:
     try:
         res = req.get(CAT_API_URL)
     except Exception as e:
-        print(f'Ошибка доступа к cat api: {e}!')
+        logging.error(f'Unexpected error while accessing cat api: {e}!')
         res = req.get(DOG_API_URL)
     (res_json,) = res.json()
     return res_json['url']
