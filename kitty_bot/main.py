@@ -43,7 +43,15 @@ def get_cat_url() -> str:
         res = req.get(CAT_API_URL)
     except Exception as e:
         logging.error(f'Unexpected error while accessing cat api: {e}!')
-        res = req.get(DOG_API_URL)
+        try:
+            res = req.get(DOG_API_URL)
+        except Exception as e:
+            logging.error(f'Unexpected error while accessing cat api: {e}!')
+            res = None
+
+    if res is None:
+        return ''
+
     (res_json,) = res.json()
     return res_json['url']
 
@@ -54,6 +62,13 @@ def send_cat_picture(chat_id: int) -> None:
     Args:
         chat_id (int): Id of chat to send picture into."""
     cat_url = get_cat_url()
+
+    if not cat_url:
+        bot.send_message(
+            chat_id=chat_id, text='Прости, я не нашёл новых картинок :-('
+        )
+        return
+
     bot.send_photo(chat_id=chat_id, photo=cat_url)
 
 
