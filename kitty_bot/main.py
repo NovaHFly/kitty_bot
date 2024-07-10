@@ -1,6 +1,7 @@
 #! .venv/scripts/python
 
 import logging
+from typing import Optional
 
 import requests as req
 import telebot as tb
@@ -32,24 +33,40 @@ newcat_keyboard.row(
 )
 
 
+def _get_response(url: str) -> Optional[req.Response]:
+    try:
+        return req.get(url)
+    except Exception as e:
+        logging.error(f'Unexpected error while accessing {url}: {e}')
+        return None
+
+
+def _get_json(response: req.Response) -> Optional[dict]:
+    try:
+        (res_json,) = response.json()
+    except Exception as e:
+        logging.error(f'Unexpected error while decoding json: {e}')
+        return None
+
+    return res_json
+
+
 def get_cat_url() -> str:
     """Get a random cat picture url.
 
     If cat api is unavailable get a random dog picture url."""
-    try:
-        res = req.get(CAT_API_URL)
-    except Exception as e:
-        logging.error(f'Unexpected error while accessing cat api: {e}!')
-        try:
-            res = req.get(DOG_API_URL)
-        except Exception as e:
-            logging.error(f'Unexpected error while accessing cat api: {e}!')
-            res = None
+    res = _get_response(CAT_API_URL)
+
+    if res is None:
+        res = _get_response(DOG_API_URL)
 
     if res is None:
         return ''
 
-    (res_json,) = res.json()
+    res_json = _get_json(res)
+    if res_json is None:
+        return ''
+
     return res_json['url']
 
 
