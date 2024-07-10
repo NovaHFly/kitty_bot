@@ -36,6 +36,9 @@ newcat_keyboard.row(
 
 
 def get_cat_url() -> str:
+    """Get a random cat picture url.
+
+    If cat api is unavailable get a random dog picture url."""
     try:
         res = req.get(CAT_API_URL)
     except Exception as e:
@@ -46,12 +49,17 @@ def get_cat_url() -> str:
 
 
 def send_cat_picture(chat_id: int) -> None:
+    """Send a random cat picture to chat.
+
+    Args:
+        chat_id (int): Id of chat to send picture into."""
     cat_url = get_cat_url()
     bot.send_photo(chat_id=chat_id, photo=cat_url)
 
 
 @bot.message_handler(commands=['start'])
 def greet_user(message: Message) -> None:
+    """Greet user and send them cat picture on /start."""
     chat = message.chat
 
     chat_id = chat.id
@@ -64,6 +72,7 @@ def greet_user(message: Message) -> None:
 
 @bot.message_handler(commands=['remove_keyboard'])
 def remove_keyboard(message: Message) -> None:
+    """Remove reply keyboard."""
     bot.send_message(
         chat_id=message.chat.id,
         text='Мяу!',
@@ -73,12 +82,14 @@ def remove_keyboard(message: Message) -> None:
 
 @bot.message_handler(commands=['newcat'])
 def send_new_cat(message: Message) -> None:
+    """Send cat picture on /newcat."""
     bot.send_message(chat_id=message.chat.id, text='Вам телеграмма!')
     send_cat_picture(message.chat.id)
 
 
 @bot.message_handler(content_types=['text'])
 def reply_default(message: Message) -> None:
+    """Send default reply message."""
     chat_id = message.chat.id
     text = 'Привет, я KittyBot!'
     bot.send_message(chat_id=chat_id, text=text)
