@@ -22,15 +22,16 @@ DOG_API_URL = 'https://api.thedogapi.com/v1/images/search'
 bot = tb.TeleBot(token=config.TOKEN)
 
 newcat_keyboard = tb.types.ReplyKeyboardMarkup(resize_keyboard=True)
-newcat_keyboard.row(
-    tb.types.KeyboardButton('Который час?'),
-    tb.types.KeyboardButton('Определи мой ip'),
-)
-newcat_keyboard.row(
-    tb.types.KeyboardButton('/random_digit'),
-    tb.types.KeyboardButton('/newcat'),
-    tb.types.KeyboardButton('/remove_keyboard'),
-)
+newcat_keyboard.row(tb.types.KeyboardButton('Хочу котиков!'))
+# newcat_keyboard.row(
+#     tb.types.KeyboardButton('Который час?'),
+#     tb.types.KeyboardButton('Определи мой ip'),
+# )
+# newcat_keyboard.row(
+#     tb.types.KeyboardButton('/random_digit'),
+#     tb.types.KeyboardButton('/newcat'),
+#     tb.types.KeyboardButton('/remove_keyboard'),
+# )
 
 
 def _get_response(url: str) -> Optional[req.Response]:
@@ -111,17 +112,26 @@ def remove_keyboard(message: Message) -> None:
 
 @bot.message_handler(commands=['newcat'])
 def send_new_cat(message: Message) -> None:
-    """Send cat picture on /newcat."""
+    """Send cat picture on /newcat or if requested."""
     bot.send_message(chat_id=message.chat.id, text='Вам телеграмма!')
     send_cat_picture(message.chat.id)
 
 
 @bot.message_handler(content_types=['text'])
 def reply_default(message: Message) -> None:
-    """Send default reply message."""
+    """Reply to text messages."""
+
+    text = message.text
+
+    if text in COMMAND_MAP:
+        return COMMAND_MAP[text](message)
+
     chat_id = message.chat.id
     text = 'Привет, я KittyBot!'
     bot.send_message(chat_id=chat_id, text=text)
+
+
+COMMAND_MAP = {'Хочу котиков!': send_new_cat}
 
 
 def main() -> None:
