@@ -6,6 +6,9 @@ authors = ["NovaHFly <mugiviska@gmail.com>"]
 license = "MIT"
 readme = "README.md"
 
+[tool.poetry.scripts]
+run_bot = "kitty_bot.main:main"
+
 
 [tool.poetry.dependencies]
 python = "^3.10"
