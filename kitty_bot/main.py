@@ -1,6 +1,7 @@
 #! .venv/scripts/python
 
 import logging
+import time
 from typing import Optional
 
 import requests as req
@@ -136,7 +137,12 @@ COMMAND_MAP = {'Хочу котиков!': send_new_cat}
 
 def main() -> None:
     print('Bot is running!')
-    bot.polling()
+    while True:
+        try:
+            bot.polling()
+        except tb.apihelper.ApiException as err:
+            logging.error(err)
+            time.sleep(600)
 
 
 if __name__ == '__main__':
