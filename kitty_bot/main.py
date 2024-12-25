@@ -1,5 +1,3 @@
-#! .venv/scripts/python
-
 import logging
 import time
 from typing import Optional
@@ -24,15 +22,6 @@ bot = tb.TeleBot(token=config.TOKEN)
 
 newcat_keyboard = tb.types.ReplyKeyboardMarkup(resize_keyboard=True)
 newcat_keyboard.row(tb.types.KeyboardButton('Хочу котиков!'))
-# newcat_keyboard.row(
-#     tb.types.KeyboardButton('Который час?'),
-#     tb.types.KeyboardButton('Определи мой ip'),
-# )
-# newcat_keyboard.row(
-#     tb.types.KeyboardButton('/random_digit'),
-#     tb.types.KeyboardButton('/newcat'),
-#     tb.types.KeyboardButton('/remove_keyboard'),
-# )
 
 
 def _get_response(url: str) -> Optional[req.Response]:
