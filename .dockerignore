@@ -1,0 +1,11 @@
+.env
+.venv
+.vscode
+.git
+.gitignore
+.ruff.toml
+*.log
+.mypy_cache
+.pytest_cache
+__pycache__
+README.md
