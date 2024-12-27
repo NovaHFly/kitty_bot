@@ -20,10 +20,13 @@ jobs:
                   python -m venv .venv
                   source .venv/bin/activate
                   poetry install
+                  echo PATH=$PATH >> $GITHUB_ENV
             - name: Check code style
-              run: ruff check .
+              run: |
+                ruff check .
             - name: Run tests
-              run: poetry run pytest
+              run: |
+                poetry run pytest
 
     build_and_push_docker_image:
         runs-on: ubuntu-latest
