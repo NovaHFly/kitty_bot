@@ -34,6 +34,7 @@ jobs:
                   passphrase: ${{secrets.SSH_PASSPHRASE}}
                   script: |
                     cd projects/kitty_bot
+                    echo ${{ secrets.SERVER_PASSWORD }} | sudo -S docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
                     sudo docker pull ${{ secrets.DOCKER_USERNAME }}/kitty_bot
                     sudo docker container stop kitty_bot
                     sudo docker container rm kitty_bot
