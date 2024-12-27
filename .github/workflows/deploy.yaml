@@ -1,0 +1,40 @@
+name: Deploy bot to server
+
+on:
+    [workflow_dispatch, workflow_call]
+
+jobs:
+    deploy:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v3
+
+            - name: Create .env file
+              uses: SpicyPizza/create-envfile@v2.0
+              with:
+                envkey_TOKEN: ${{ secrets.TOKEN }}
+
+            - name: Copy .env file
+              uses: appleboy/scp-action@master
+              with:
+                  host: ${{ secrets.SSH_HOST }}
+                  username: ${{ secrets.SSH_USERNAME }}
+                  key: ${{ secrets.SSH_KEY }}
+                  passphrase: ${{secrets.SSH_PASSPHRASE}}
+                  source: ".env"
+                  target: "projects/kitty_bot"
+
+            - name: Deploy
+              uses: appleboy/ssh-action@master
+              with:
+                  host: ${{ secrets.SSH_HOST }}
+                  username: ${{ secrets.SSH_USERNAME }}
+                  key: ${{ secrets.SSH_KEY }}
+                  passphrase: ${{secrets.SSH_PASSPHRASE}}
+                  script: |
+                    cd projects/kitty_bot
+                    sudo docker pull ${{ secrets.DOCKER_USERNAME }}/kitty_bot
+                    sudo docker container stop kitty_bot
+                    sudo docker container rm kitty_bot
+                    sudo docker run --name kitty_bot -d --env-file .env ${{ secrets.DOCKER_USERNAME }}/kitty_bot
