@@ -12,8 +12,8 @@ run_bot = "kitty_bot.main:main"
 
 [tool.poetry.dependencies]
 python = "^3.10"
-pytelegrambotapi = "^4.21.0"
 python-dotenv = "^1.0.1"
+python-telegram-bot = "^21.9"
 
 [tool.poetry.group.testing.dependencies]
 ruff = "^0.4.10"
