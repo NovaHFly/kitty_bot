@@ -1,7 +1,6 @@
 import logging
-from typing import Optional
+from random import choice
 
-import httpx
 from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove, Update
 from telegram.ext import (
     Application,
@@ -12,6 +11,7 @@ from telegram.ext import (
 )
 
 from kitty_bot import config
+from kitty_bot.fetcher import ApiRequest
 
 logging.basicConfig(
     level=logging.INFO,
@@ -20,49 +20,73 @@ logging.basicConfig(
     format='%(asctime)s, %(levelname)s, %(message)s, %(name)s',
 )
 
-CAT_API_URL = 'https://api.thecatapi.com/v1/images/search'
-DOG_API_URL = 'https://api.thedogapi.com/v1/images/search'
+CAT_API_URL = 'https://api.thecatapi.com/'
+DOG_API_URL = 'https://api.thedogapi.com/'
 
 newcat_keyboard = ReplyKeyboardMarkup(
-    [['Хочу котиков!']], resize_keyboard=True
+    [['Хочу котиков!', 'Хочу пёсиков!']], resize_keyboard=True
 )
 
 
-def _get_response(url: str) -> Optional[httpx.Response]:
-    try:
-        return httpx.get(url)
-    except Exception as e:
-        logging.error(f'Unexpected error while accessing {url}: {e}')
-        return None
+def get_random_api_json(
+    api_url: str,
+    paths: list[str] | None,
+    params: dict[str, str] | None,
+) -> dict:
+    """Get a random api object json."""
+
+    if not paths:
+        paths = []
+
+    if not params:
+        params = {}
+
+    api_json = (
+        ApiRequest.builder(api_url)
+        .paths(*paths)
+        .params(**params)
+        .build()
+        .get_json()
+    )
+
+    if isinstance(api_json, list):
+        if not len(api_json):
+            raise ValueError('Empty api json')
+        return choice(api_json)
+
+    return api_json
 
 
-def _get_json(response: httpx.Response) -> Optional[dict]:
-    try:
-        (res_json,) = response.json()
-    except Exception as e:
-        logging.error(f'Unexpected error while decoding json: {e}')
-        return None
+def get_random_cat_url() -> str:
+    """Get a random cat picture url."""
 
-    return res_json
+    cat_json = get_random_api_json(
+        api_url=CAT_API_URL,
+        paths=['v1', 'images', 'search'],
+        params={},
+    )
+
+    cat_url = cat_json.get('url')
+    if not cat_url:
+        raise ValueError('Cat url is missing')
+
+    return cat_url
 
 
-def get_cat_url() -> str:
-    """Get a random cat picture url.
+def get_random_dog_url() -> str:
+    """Get a random dog picture url."""
 
-    If cat api is unavailable get a random dog picture url."""
-    res = _get_response(CAT_API_URL)
+    dog_json = get_random_api_json(
+        api_url=DOG_API_URL,
+        paths=['v1', 'images', 'search'],
+        params={},
+    )
 
-    if res is None:
-        res = _get_response(DOG_API_URL)
+    dog_url = dog_json.get('url')
+    if not dog_url:
+        raise ValueError('Cat url is missing')
 
-    if res is None:
-        return ''
-
-    res_json = _get_json(res)
-    if res_json is None:
-        return ''
-
-    return res_json['url']
+    return dog_url
 
 
 async def send_cat_picture(
@@ -70,18 +94,31 @@ async def send_cat_picture(
     context: ContextTypes.DEFAULT_TYPE,
 ) -> None:
     """Send a random cat picture to chat."""
-    cat_url = get_cat_url()
-
-    if not cat_url:
-        await context.bot.send_message(
-            chat_id=update.effective_chat.id,
-            text='Прости, я не нашёл новых картинок :-(',
-        )
+    try:
+        cat_url = get_random_cat_url()
+    except ValueError as e:
+        logging.error(e)
+        await update.message.reply_text('Прости, я не нашёл котиков :-(')
         return
 
-    await context.bot.send_photo(
-        chat_id=update.effective_chat.id, photo=cat_url
-    )
+    await update.message.reply_text('Смотри, какого котика я тебе нашёл:')
+    await update.message.reply_photo(photo=cat_url)
+
+
+async def send_dog_picture(
+    update: Update,
+    context: ContextTypes.DEFAULT_TYPE,
+) -> None:
+    """Send a random dog picture to chat."""
+    try:
+        dog_url = get_random_dog_url()
+    except ValueError as e:
+        logging.error(e)
+        await update.message.reply_text('Собачек сегодня нет :3')
+        return
+
+    await update.message.reply_text('Держи своего пёсика :< :')
+    await update.message.reply_photo(photo=dog_url)
 
 
 async def greet_user(
@@ -91,13 +128,18 @@ async def greet_user(
     """Greet user and send them cat picture on /start."""
     name = update.effective_user.first_name
 
-    text = f'Привет, {name}. Посмотри, какого котика я тебе нашёл'
+    text = (
+        f'Привет, {name}. Я кошкабот. '
+        'Я существую для того, чтобы ты увидел котиков.'
+    )
     await update.message.reply_text(text, reply_markup=newcat_keyboard)
     await send_cat_picture(update, context)
 
 
 async def stop(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    await update.message.reply_text('Мяу!', reply_markup=ReplyKeyboardRemove())
+    await update.message.reply_text(
+        'Мяу! Увидимся!', reply_markup=ReplyKeyboardRemove()
+    )
 
 
 def main() -> None:
@@ -105,8 +147,15 @@ def main() -> None:
 
     application.add_handler(
         MessageHandler(
-            filters=filters.Text(['Хочу котиков!']), callback=send_cat_picture
+            filters=filters.Text(['Хочу котиков!']),
+            callback=send_cat_picture,
         )
+    )
+    application.add_handler(
+        MessageHandler(
+            filters=filters.Text(['Хочу пёсиков!']),
+            callback=send_dog_picture,
+        ),
     )
     application.add_handler(CommandHandler('start', greet_user))
     application.add_handler(CommandHandler('stop', stop))
