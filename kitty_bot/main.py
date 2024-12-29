@@ -19,32 +19,22 @@ logging.basicConfig(
     filemode='a',
     format='%(asctime)s, %(levelname)s, %(message)s, %(name)s',
 )
+logging.getLogger().addHandler(logging.StreamHandler())
 
 CAT_API_URL = 'https://api.thecatapi.com/'
 DOG_API_URL = 'https://api.thedogapi.com/'
 
 newcat_keyboard = ReplyKeyboardMarkup(
-    [['Хочу котиков!', 'Хочу пёсиков!']], resize_keyboard=True
+    [['Хочу котиков!', 'Хочу пёсиков!']],
+    resize_keyboard=True,
 )
 
 
-def get_random_api_json(
-    api_url: str,
-    paths: list[str] | None,
-    params: dict[str, str] | None,
-) -> dict:
-    """Get a random api object json."""
-
-    if not paths:
-        paths = []
-
-    if not params:
-        params = {}
-
+def get_random_animal_url(api_url: str) -> str:
+    """Get a random animal picture url."""
     api_json = (
         ApiRequest.builder(api_url)
-        .paths(*paths)
-        .params(**params)
+        .paths('v1', 'images', 'search')
         .build()
         .get_json()
     )
@@ -52,41 +42,13 @@ def get_random_api_json(
     if isinstance(api_json, list):
         if not len(api_json):
             raise ValueError('Empty api json')
-        return choice(api_json)
+        api_json = choice(api_json)
 
-    return api_json
+    picture_url = api_json.get('url')
+    if not picture_url:
+        raise ValueError('Picture url is missing')
 
-
-def get_random_cat_url() -> str:
-    """Get a random cat picture url."""
-
-    cat_json = get_random_api_json(
-        api_url=CAT_API_URL,
-        paths=['v1', 'images', 'search'],
-        params={},
-    )
-
-    cat_url = cat_json.get('url')
-    if not cat_url:
-        raise ValueError('Cat url is missing')
-
-    return cat_url
-
-
-def get_random_dog_url() -> str:
-    """Get a random dog picture url."""
-
-    dog_json = get_random_api_json(
-        api_url=DOG_API_URL,
-        paths=['v1', 'images', 'search'],
-        params={},
-    )
-
-    dog_url = dog_json.get('url')
-    if not dog_url:
-        raise ValueError('Cat url is missing')
-
-    return dog_url
+    return picture_url
 
 
 async def send_cat_picture(
@@ -95,7 +57,7 @@ async def send_cat_picture(
 ) -> None:
     """Send a random cat picture to chat."""
     try:
-        cat_url = get_random_cat_url()
+        cat_url = get_random_animal_url(CAT_API_URL)
     except ValueError as e:
         logging.error(e)
         await update.message.reply_text('Прости, я не нашёл котиков :-(')
@@ -111,13 +73,13 @@ async def send_dog_picture(
 ) -> None:
     """Send a random dog picture to chat."""
     try:
-        dog_url = get_random_dog_url()
+        dog_url = get_random_animal_url(DOG_API_URL)
     except ValueError as e:
         logging.error(e)
         await update.message.reply_text('Собачек сегодня нет :3')
         return
 
-    await update.message.reply_text('Держи своего пёсика :< :')
+    await update.message.reply_text('Держи своего пёсика :<')
     await update.message.reply_photo(photo=dog_url)
 
 
@@ -160,7 +122,6 @@ def main() -> None:
     application.add_handler(CommandHandler('start', greet_user))
     application.add_handler(CommandHandler('stop', stop))
 
-    print('Bot is running!')
     application.run_polling()
 
 
