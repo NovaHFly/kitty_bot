@@ -13,6 +13,7 @@ from .paths import BOT_DATA_PATH
 async def main() -> None:
     await bot.set_webhook(
         url=getenv('WEBHOOK_URL'),
+        secret_token=getenv('WEBHOOK_TOKEN'),
     )
 
     webserver = Server(
