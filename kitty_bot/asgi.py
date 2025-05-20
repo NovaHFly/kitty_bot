@@ -1,7 +1,10 @@
+from os import getenv
+
 from starlette.applications import Starlette
 from starlette.requests import Request
 from starlette.responses import PlainTextResponse, Response
 from starlette.routing import Route
+from uvicorn import Config, Server
 
 from .bot import bot, dispatcher
 
@@ -21,4 +24,12 @@ starlette_app = Starlette(
         Route('/', webhook, methods=['POST']),
         Route('/healthcheck/', check_health, methods=['GET']),
     ]
+)
+
+webserver = Server(
+    config=Config(
+        app=starlette_app,
+        port=int(getenv('PORT')),
+        host=getenv('HOSTNAME'),
+    )
 )
