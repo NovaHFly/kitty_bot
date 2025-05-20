@@ -1,5 +1,10 @@
 from asyncio import run
-from logging import basicConfig as setup_logging, FileHandler, INFO
+from logging import (
+    basicConfig as setup_logging,
+    FileHandler,
+    INFO,
+    StreamHandler,
+)
 from os import getenv
 from sys import stdout
 
@@ -30,7 +35,9 @@ async def main() -> None:
 if __name__ == '__main__':
     setup_logging(
         level=INFO,
-        stream=stdout,
-        handlers=FileHandler(BOT_DATA_PATH / 'main.log'),
+        handlers=[
+            FileHandler(BOT_DATA_PATH / 'main.log'),
+            StreamHandler(stdout),
+        ],
     )
     run(main())

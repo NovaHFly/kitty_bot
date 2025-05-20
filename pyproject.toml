@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "kitty_bot"
-version = "0.0.1"
+version = "0.2.0"
 description = "Telegram bot which sends cat and dog pictures on demand"
 authors = ["NovaHFly <mugiviska@gmail.com>"]
 license = "MIT"
