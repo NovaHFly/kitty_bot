@@ -1,0 +1,13 @@
+volumes:
+  bot_data:
+    external: true
+    name: ./bot_data
+
+services:
+  bot:
+    image: novahfly/kitty_bot:latest
+    env_file: .env
+    ports:
+      - 127.0.0.1:8040:80
+    volumes:
+      - ./bot_data:/bot_data
