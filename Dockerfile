@@ -1,21 +1,22 @@
 FROM python:3.12-alpine AS base
 
-FROM base AS build
+FROM base AS builder
 
-ENV POETRY_VERSION=1.8.3 \
-    POETRY_VIRTUALENVS_IN_PROJECT=1
+ENV UV_COMPILE_BYTECODE=1 LINK_MODE=copy
 
-RUN pip install poetry==$POETRY_VERSION
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 WORKDIR /build
-COPY pyproject.toml poetry.lock ./
-RUN poetry install --no-root
+COPY pyproject.toml uv.lock ./
+RUN uv sync --no-install-project --locked --no-editable
 
 FROM base AS final
 
 WORKDIR /app
 
-COPY --from=build /build/.venv .venv
+COPY --from=builder /build/.venv .venv
 COPY ./kitty_bot ./kitty_bot
 
-CMD [".venv/bin/python", "-m", "kitty_bot"]
+ENV PATH="/app/.venv/bin:$PATH"
+
+CMD ["python", "-m", "kitty_bot"]
